@@ -2,7 +2,6 @@ package ru.itmo.java;
 
 public class HashTable {
 
-
     private class Entry
     {
         private int hashCode;
@@ -28,6 +27,8 @@ public class HashTable {
     private static final int DEFAULT_ENTRY_INDEX = -1;
 
     private static final int POSITIVE_VALUE_MASK = 0x7FFFFFFF;
+
+    private static final int RESIZE_FACTOR = 2;
 
     private int capacity;
 
@@ -89,7 +90,7 @@ public class HashTable {
             freeCount--;
         } else {
             if (count == entries.length) {
-                Resize(capacity * 2);
+                Resize(capacity * RESIZE_FACTOR);
                 targetBucket = hashCode % buckets.length;
             }
             index = count;
