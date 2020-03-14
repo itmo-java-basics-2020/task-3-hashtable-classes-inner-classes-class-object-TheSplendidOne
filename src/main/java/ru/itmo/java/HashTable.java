@@ -2,8 +2,7 @@ package ru.itmo.java;
 
 public class HashTable {
 
-    private class Entry
-    {
+    private class Entry {
         private int hashCode;
 
         private int next;
@@ -46,30 +45,26 @@ public class HashTable {
 
     private Entry[] entries;
 
-    public HashTable()
-    {
+    public HashTable() {
         this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
     }
 
-    public HashTable(int initialCapacity)
-    {
+    public HashTable(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
 
-    public HashTable(double loadFactor)
-    {
+    public HashTable(double loadFactor) {
         this(DEFAULT_CAPACITY, loadFactor);
     }
 
-    public HashTable(int initialCapacity, double loadFactor)
-    {
+    public HashTable(int initialCapacity, double loadFactor) {
         capacity = initialCapacity;
         this.loadFactor = loadFactor;
-        threshold = (int)(capacity * loadFactor);
+        threshold = (int) (capacity * loadFactor);
         buckets = new int[capacity];
         entries = new Entry[threshold];
         freeList = DEFAULT_ENTRY_INDEX;
-        for(int i = 0; i < capacity; ++i)
+        for (int i = 0; i < capacity; ++i)
             buckets[i] = DEFAULT_ENTRY_INDEX;
     }
 
@@ -90,7 +85,7 @@ public class HashTable {
             freeCount--;
         } else {
             if (count == entries.length) {
-                Resize(capacity * RESIZE_FACTOR);
+                resize(capacity * RESIZE_FACTOR);
                 targetBucket = hashCode % buckets.length;
             }
             index = count;
@@ -101,10 +96,9 @@ public class HashTable {
         return null;
     }
 
-    private void Resize(int newSize)
-    {
+    private void resize(int newSize) {
         capacity = newSize;
-        threshold = (int)(capacity * loadFactor);
+        threshold = (int) (capacity * loadFactor);
         int[] newBuckets = new int[newSize];
         for (int i = 0; i < newBuckets.length; i++)
             newBuckets[i] = DEFAULT_ENTRY_INDEX;
@@ -138,8 +132,7 @@ public class HashTable {
             if (entries[i].hashCode == hashCode && entries[i].key.equals(key)) {
                 if (last < 0) {
                     buckets[bucket] = entries[i].next;
-                }
-                else {
+                } else {
                     entries[last].next = entries[i].next;
                 }
                 Object oldValue = entries[i].value;
