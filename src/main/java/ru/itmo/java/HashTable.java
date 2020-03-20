@@ -1,48 +1,19 @@
 package ru.itmo.java;
 
 public class HashTable {
-
-    private class Entry {
-        private int hashCode;
-
-        private int next;
-
-        private Object key;
-
-        private Object value;
-
-        private Entry(int hashCode, int next, Object key, Object value) {
-            this.hashCode = hashCode;
-            this.next = next;
-            this.key = key;
-            this.value = value;
-        }
-    }
-
-    private static final int DEFAULT_CAPACITY = 13;
-
     private static final double DEFAULT_LOAD_FACTOR = 0.5;
-
+    private static final int DEFAULT_CAPACITY = 13;
     private static final int DEFAULT_ENTRY_INDEX = -1;
-
     private static final int POSITIVE_VALUE_MASK = 0x7FFFFFFF;
-
     private static final int RESIZE_FACTOR = 2;
 
+    private final double loadFactor;
     private int capacity;
-
-    private double loadFactor;
-
     private int threshold;
-
     private int count;
-
     private int freeCount;
-
     private int freeList;
-
     private int[] buckets;
-
     private Entry[] entries;
 
     public HashTable() {
@@ -85,7 +56,7 @@ public class HashTable {
             freeCount--;
         } else {
             if (count == entries.length) {
-                resize(capacity * RESIZE_FACTOR);
+                resize();
                 targetBucket = hashCode % buckets.length;
             }
             index = count;
@@ -94,25 +65,6 @@ public class HashTable {
         entries[index] = new Entry(hashCode, buckets[targetBucket], key, value);
         buckets[targetBucket] = index;
         return null;
-    }
-
-    private void resize(int newSize) {
-        capacity = newSize;
-        threshold = (int) (capacity * loadFactor);
-        int[] newBuckets = new int[newSize];
-        for (int i = 0; i < newBuckets.length; i++)
-            newBuckets[i] = DEFAULT_ENTRY_INDEX;
-        Entry[] newEntries = new Entry[threshold];
-        System.arraycopy(entries, 0, newEntries, 0, count);
-        for (int i = 0; i < count; i++) {
-            if (newEntries[i].hashCode >= 0) {
-                int bucket = newEntries[i].hashCode % newSize;
-                newEntries[i].next = newBuckets[bucket];
-                newBuckets[bucket] = i;
-            }
-        }
-        buckets = newBuckets;
-        entries = newEntries;
     }
 
     public Object get(Object key) {
@@ -149,4 +101,36 @@ public class HashTable {
         return count - freeCount;
     }
 
+    private void resize() {
+        capacity *= RESIZE_FACTOR;
+        threshold = (int) (capacity * loadFactor);
+        int[] newBuckets = new int[capacity];
+        for (int i = 0; i < newBuckets.length; i++)
+            newBuckets[i] = DEFAULT_ENTRY_INDEX;
+        Entry[] newEntries = new Entry[threshold];
+        System.arraycopy(entries, 0, newEntries, 0, count);
+        for (int i = 0; i < count; i++) {
+            if (newEntries[i].hashCode >= 0) {
+                int bucket = newEntries[i].hashCode % capacity;
+                newEntries[i].next = newBuckets[bucket];
+                newBuckets[bucket] = i;
+            }
+        }
+        buckets = newBuckets;
+        entries = newEntries;
+    }
+
+    private class Entry {
+        private int hashCode;
+        private int next;
+        private Object key;
+        private Object value;
+
+        private Entry(int hashCode, int next, Object key, Object value) {
+            this.hashCode = hashCode;
+            this.next = next;
+            this.key = key;
+            this.value = value;
+        }
+    }
 }
