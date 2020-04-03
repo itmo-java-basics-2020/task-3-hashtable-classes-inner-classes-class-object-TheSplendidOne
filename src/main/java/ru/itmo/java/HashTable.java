@@ -42,17 +42,17 @@ public class HashTable {
     public Object put(Object key, Object value) {
         int hashCode = key.hashCode() & POSITIVE_VALUE_MASK;
         int targetBucket = hashCode % capacity;
-        for (int i = buckets[targetBucket]; i >= 0; i = entries[i].next) {
-            if (entries[i].hashCode == hashCode && entries[i].key.equals(key)) {
-                Object oldValue = entries[i].value;
-                entries[i].value = value;
+        for (int i = buckets[targetBucket]; i >= 0; i = entries[i].GetNext()) {
+            if (entries[i].GetHashCode() == hashCode && entries[i].GetKey().equals(key)) {
+                Object oldValue = entries[i].GetValue();
+                entries[i] = new Entry(entries[i].GetHashCode(), entries[i].GetNext(), entries[i].GetKey(), value);
                 return oldValue;
             }
         }
         int index;
         if (freeCount > 0) {
             index = freeList;
-            freeList = entries[index].next;
+            freeList = entries[index].GetNext();
             freeCount--;
         } else {
             if (count == entries.length) {
@@ -69,9 +69,9 @@ public class HashTable {
 
     public Object get(Object key) {
         int hashCode = key.hashCode() & POSITIVE_VALUE_MASK;
-        for (int i = buckets[hashCode % buckets.length]; i >= 0; i = entries[i].next) {
-            if (entries[i].hashCode == hashCode && entries[i].key.equals(key))
-                return entries[i].value;
+        for (int i = buckets[hashCode % buckets.length]; i >= 0; i = entries[i].GetNext()) {
+            if (entries[i].GetHashCode() == hashCode && entries[i].GetKey().equals(key))
+                return entries[i].GetValue();
         }
         return null;
     }
@@ -80,14 +80,14 @@ public class HashTable {
         int hashCode = key.hashCode() & POSITIVE_VALUE_MASK;
         int bucket = hashCode % buckets.length;
         int last = -1;
-        for (int i = buckets[bucket]; i >= 0; last = i, i = entries[i].next) {
-            if (entries[i].hashCode == hashCode && entries[i].key.equals(key)) {
+        for (int i = buckets[bucket]; i >= 0; last = i, i = entries[i].GetNext()) {
+            if (entries[i].GetHashCode() == hashCode && entries[i].GetKey().equals(key)) {
                 if (last < 0) {
-                    buckets[bucket] = entries[i].next;
+                    buckets[bucket] = entries[i].GetNext();
                 } else {
-                    entries[last].next = entries[i].next;
+                    entries[last] = new Entry(entries[last].GetHashCode(), entries[i].GetNext(), entries[last].GetKey(), entries[last].GetValue());
                 }
-                Object oldValue = entries[i].value;
+                Object oldValue = entries[i].GetValue();
                 entries[i] = new Entry(DEFAULT_ENTRY_INDEX, freeList, null, null);
                 freeList = i;
                 freeCount++;
@@ -110,9 +110,9 @@ public class HashTable {
         Entry[] newEntries = new Entry[threshold];
         System.arraycopy(entries, 0, newEntries, 0, count);
         for (int i = 0; i < count; i++) {
-            if (newEntries[i].hashCode >= 0) {
-                int bucket = newEntries[i].hashCode % capacity;
-                newEntries[i].next = newBuckets[bucket];
+            if (newEntries[i].GetHashCode() >= 0) {
+                int bucket = newEntries[i].GetHashCode() % capacity;
+                newEntries[i] =  new Entry(entries[i].GetHashCode(), newBuckets[bucket], entries[i].GetKey(), entries[i].GetValue());
                 newBuckets[bucket] = i;
             }
         }
@@ -120,17 +120,37 @@ public class HashTable {
         entries = newEntries;
     }
 
-    private class Entry {
-        private int hashCode;
-        private int next;
-        private Object key;
-        private Object value;
+    private final class Entry {
+        private final int hashCode;
+        private final int next;
+        private final Object key;
+        private final Object value;
 
         private Entry(int hashCode, int next, Object key, Object value) {
             this.hashCode = hashCode;
             this.next = next;
             this.key = key;
             this.value = value;
+        }
+
+        public int GetHashCode()
+        {
+            return hashCode;
+        }
+
+        public int GetNext()
+        {
+            return next;
+        }
+
+        public Object GetKey()
+        {
+            return key;
+        }
+
+        public Object GetValue()
+        {
+            return value;
         }
     }
 }
